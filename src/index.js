@@ -5,6 +5,9 @@ const razorpayRoutes     = require("./routes/razorpay");
 const lemonsqueezyRoutes = require("./routes/lemonsqueezy");
 const licenseRoutes      = require("./routes/license");
 const askRoutes          = require("./routes/ask");
+const downloadRoutes     = require("./routes/download");
+const analyticsRoutes    = require("./routes/analytics");
+const adminRoutes        = require("./routes/admin");
 
 const path = require("path");
 const app  = express();
@@ -36,6 +39,9 @@ app.use("/api/razorpay",      razorpayRoutes);
 app.use("/api/lemonsqueezy",  lemonsqueezyRoutes);
 app.use("/api",               licenseRoutes);
 app.use("/api",               askRoutes);
+app.use("/api",               downloadRoutes);
+app.use("/api",               analyticsRoutes);
+app.use("/",                  adminRoutes);
 
 // ── 404 ──────────────────────────────────────────────────────
 app.use((_req, res) => res.status(404).json({ error: "Not found" }));
@@ -55,7 +61,10 @@ app.listen(PORT, () => {
   ║  POST /api/razorpay/webhook          ║
   ║  POST /api/lemonsqueezy/webhook      ║
   ║  POST /api/verify-license            ║
-  ║  GET  /api/health                    ║
+  ║  GET  /api/download                  ║
+  ║  POST /api/analytics                 ║
+  ║  GET  /admin                         ║
+  ║  GET  /api/admin/stats               ║
   ╚══════════════════════════════════════╝
   `);
 });

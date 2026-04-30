@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Looly Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#0a0a12;color:#e2e2e8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh}
+
+    /* ── Login ── */
+    #login{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px}
+    #login h1{font-size:22px;font-weight:700;color:#fff;letter-spacing:-0.5px}
+    #login p{color:rgba(255,255,255,0.4);font-size:13px}
+    #login input{width:280px;padding:12px 16px;background:#13131f;border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#fff;font-size:15px;outline:none;transition:border 0.2s}
+    #login input:focus{border-color:rgba(249,115,22,0.6)}
+    #login button{width:280px;padding:12px;background:linear-gradient(135deg,#f97316,#ea580c);border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:opacity 0.2s}
+    #login button:hover{opacity:0.9}
+    #login .err{color:#f87171;font-size:13px;display:none}
+
+    /* ── Dashboard ── */
+    #dashboard{display:none;padding:32px;max-width:1200px;margin:0 auto}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px}
+    .topbar h1{font-size:20px;font-weight:700;color:#fff}
+    .topbar span{font-size:12px;color:rgba(255,255,255,0.3)}
+    .refresh-btn{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13px;transition:background 0.2s}
+    .refresh-btn:hover{background:rgba(255,255,255,0.1)}
+
+    /* ── Cards ── */
+    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:32px}
+    .card{background:#13131f;border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:20px}
+    .card-label{font-size:11px;text-transform:uppercase;letter-spacing:0.8px;color:rgba(255,255,255,0.35);margin-bottom:8px}
+    .card-value{font-size:30px;font-weight:700;color:#fff;letter-spacing:-1px}
+    .card-sub{font-size:12px;color:rgba(255,255,255,0.35);margin-top:4px}
+    .card.orange .card-value{color:#fb923c}
+    .card.green  .card-value{color:#4ade80}
+    .card.blue   .card-value{color:#60a5fa}
+    .card.purple .card-value{color:#c084fc}
+
+    /* ── Section ── */
+    .section{margin-bottom:32px}
+    .section-title{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:rgba(255,255,255,0.35);margin-bottom:12px}
+    .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px}
+    .chart-box{background:#13131f;border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:20px}
+    .chart-box h3{font-size:13px;font-weight:600;color:rgba(255,255,255,0.6);margin-bottom:16px}
+
+    /* ── Event pills ── */
+    .events-grid{display:flex;flex-wrap:wrap;gap:10px}
+    .event-pill{background:#1a1a2e;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 16px;display:flex;flex-direction:column;gap:4px}
+    .event-pill .ev-name{font-size:12px;color:rgba(255,255,255,0.4)}
+    .event-pill .ev-count{font-size:22px;font-weight:700;color:#fb923c}
+
+    /* ── Tables ── */
+    .tbl-wrap{background:#13131f;border:1px solid rgba(255,255,255,0.07);border-radius:14px;overflow:hidden}
+    table{width:100%;border-collapse:collapse}
+    th{font-size:11px;text-transform:uppercase;letter-spacing:0.6px;color:rgba(255,255,255,0.3);padding:12px 16px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.06)}
+    td{font-size:13px;color:rgba(255,255,255,0.75);padding:11px 16px;border-bottom:1px solid rgba(255,255,255,0.04)}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:rgba(255,255,255,0.03)}
+    .badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:600}
+    .badge.monthly{background:rgba(96,165,250,0.15);color:#60a5fa}
+    .badge.annual {background:rgba(74,222,128,0.15);color:#4ade80}
+    .badge.free   {background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.4)}
+
+    @media(max-width:700px){.charts-row{grid-template-columns:1fr}.cards{grid-template-columns:1fr 1fr}}
+  </style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login">
+  <h1>&#x2726; Looly Admin</h1>
+  <p>Enter admin password to continue</p>
+  <input type="password" id="token-input" placeholder="Password" onkeydown="if(event.key==='Enter')login()"/>
+  <button onclick="login()">Sign in</button>
+  <div class="err" id="login-err">Wrong password</div>
+</div>
+
+<!-- Dashboard -->
+<div id="dashboard">
+  <div class="topbar">
+    <h1>&#x2726; Looly Admin</h1>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span id="last-updated"></span>
+      <button class="refresh-btn" onclick="loadStats()">&#8635; Refresh</button>
+    </div>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="cards">
+    <div class="card blue">
+      <div class="card-label">Free Downloads</div>
+      <div class="card-value" id="c-downloads">&#8212;</div>
+      <div class="card-sub">installer clicks</div>
+    </div>
+    <div class="card orange">
+      <div class="card-label">Pro Monthly</div>
+      <div class="card-value" id="c-monthly">&#8212;</div>
+      <div class="card-sub">active licenses</div>
+    </div>
+    <div class="card green">
+      <div class="card-label">Pro Annual</div>
+      <div class="card-value" id="c-annual">&#8212;</div>
+      <div class="card-sub">active licenses</div>
+    </div>
+    <div class="card purple">
+      <div class="card-label">Est. Revenue</div>
+      <div class="card-value" id="c-revenue">&#8212;</div>
+      <div class="card-sub">&#x20B9; total billed</div>
+    </div>
+  </div>
+
+  <!-- Charts row -->
+  <div class="charts-row">
+    <div class="chart-box">
+      <h3>Daily Questions Asked (last 30 days)</h3>
+      <canvas id="chart-asks" height="180"></canvas>
+    </div>
+    <div class="chart-box">
+      <h3>New Pro Signups per Day</h3>
+      <canvas id="chart-signups" height="180"></canvas>
+    </div>
+  </div>
+
+  <!-- Events -->
+  <div class="section">
+    <div class="section-title">Usage Events (all time)</div>
+    <div class="events-grid" id="events-grid">
+      <div class="event-pill"><div class="ev-name">Loading...</div></div>
+    </div>
+  </div>
+
+  <!-- Recent Licenses -->
+  <div class="section">
+    <div class="section-title">Recent Pro Licenses</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Email</th><th>Plan</th><th>Payment ID</th><th>Date</th></tr></thead>
+        <tbody id="tbl-licenses"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Recent Downloads -->
+  <div class="section">
+    <div class="section-title">Recent Downloads</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>IP</th><th>Referrer</th><th>User Agent</th><th>Date</th></tr></thead>
+        <tbody id="tbl-downloads"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  const BACKEND = "";  // same origin
+  let _token = sessionStorage.getItem("looly_admin_token") || "";
+  let asksChart, signupsChart;
+
+  function login() {
+    const t = document.getElementById("token-input").value.trim();
+    if (!t) return;
+    _token = t;
+    loadStats();
+  }
+
+  async function loadStats() {
+    try {
+      const r = await fetch(`${BACKEND}/api/admin/stats?token=${encodeURIComponent(_token)}`);
+      if (r.status === 401) {
+        document.getElementById("login-err").style.display = "block";
+        return;
+      }
+      const d = await r.json();
+      if (d.error) { alert(d.error); return; }
+
+      // Auth ok — store token, show dashboard
+      sessionStorage.setItem("looly_admin_token", _token);
+      document.getElementById("login").style.display = "none";
+      document.getElementById("dashboard").style.display = "block";
+      document.getElementById("login-err").style.display = "none";
+
+      // Stat cards
+      document.getElementById("c-downloads").textContent = d.downloads.toLocaleString();
+      document.getElementById("c-monthly").textContent   = d.plans["pro-monthly"].toLocaleString();
+      document.getElementById("c-annual").textContent    = d.plans["pro-annual"].toLocaleString();
+      document.getElementById("c-revenue").textContent   = "&#x20B9;" + d.revenueINR.toLocaleString("en-IN");
+      document.getElementById("c-revenue").innerHTML     = "&#x20B9;" + d.revenueINR.toLocaleString("en-IN");
+
+      document.getElementById("last-updated").textContent =
+        "Updated " + new Date().toLocaleTimeString();
+
+      // Event pills
+      const eg = document.getElementById("events-grid");
+      const EVENT_LABELS = {
+        app_opened:       "App Opened",
+        question_asked:   "Questions Asked",
+        upgrade_prompted: "Upgrade Prompted",
+        license_activated:"License Activated",
+      };
+      eg.innerHTML = Object.entries(d.eventCounts)
+        .sort((a,b) => b[1]-a[1])
+        .map(([ev, n]) =>
+          `<div class="event-pill">
+             <div class="ev-name">${EVENT_LABELS[ev] || ev}</div>
+             <div class="ev-count">${n.toLocaleString()}</div>
+           </div>`
+        ).join("") || "<div style='color:rgba(255,255,255,0.3);font-size:13px;padding:8px'>No events yet</div>";
+
+      // Build last-30-days date array
+      const days30 = [];
+      for (let i = 29; i >= 0; i--) {
+        const d2 = new Date(); d2.setDate(d2.getDate() - i);
+        days30.push(d2.toISOString().slice(0, 10));
+      }
+      const shortDate = s => s.slice(5); // "04-30"
+
+      // Chart: daily asks
+      const askData     = days30.map(d2 => d.dailyAsks[d2] || 0);
+      const signupData  = days30.map(d2 => d.dailySignups[d2] || 0);
+      const chartLabels = days30.map(shortDate);
+
+      const CHART_OPTS = (color) => ({
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: "rgba(255,255,255,0.04)" }, ticks: { color: "rgba(255,255,255,0.3)", font: { size: 10 }, maxTicksLimit: 10 } },
+          y: { grid: { color: "rgba(255,255,255,0.04)" }, ticks: { color: "rgba(255,255,255,0.3)", font: { size: 10 }, precision: 0 }, beginAtZero: true },
+        },
+      });
+
+      if (asksChart) asksChart.destroy();
+      asksChart = new Chart(document.getElementById("chart-asks"), {
+        type: "bar",
+        data: {
+          labels: chartLabels,
+          datasets: [{ data: askData, backgroundColor: "rgba(249,115,22,0.7)", borderRadius: 4, borderSkipped: false }],
+        },
+        options: CHART_OPTS("rgba(249,115,22,0.7)"),
+      });
+
+      if (signupsChart) signupsChart.destroy();
+      signupsChart = new Chart(document.getElementById("chart-signups"), {
+        type: "bar",
+        data: {
+          labels: chartLabels,
+          datasets: [{ data: signupData, backgroundColor: "rgba(74,222,128,0.7)", borderRadius: 4, borderSkipped: false }],
+        },
+        options: CHART_OPTS("rgba(74,222,128,0.7)"),
+      });
+
+      // Recent licenses table
+      document.getElementById("tbl-licenses").innerHTML =
+        (d.recentLicenses.length === 0
+          ? `<tr><td colspan="4" style="color:rgba(255,255,255,0.2);text-align:center;padding:20px">No licenses yet</td></tr>`
+          : d.recentLicenses.map(r2 => {
+              const badgeClass = r2.plan === "pro-monthly" ? "monthly" : r2.plan === "pro-annual" || r2.plan === "pro" ? "annual" : "free";
+              const planLabel  = r2.plan === "pro-monthly" ? "Monthly" : r2.plan === "pro-annual" || r2.plan === "pro" ? "Annual" : r2.plan;
+              return `<tr>
+                <td>${r2.email || "—"}</td>
+                <td><span class="badge ${badgeClass}">${planLabel}</span></td>
+                <td style="font-family:monospace;font-size:11px;color:rgba(255,255,255,0.4)">${(r2.payment_id||"—").slice(0,20)}</td>
+                <td>${r2.created_at ? new Date(r2.created_at).toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}) : "—"}</td>
+              </tr>`;
+            }).join("")
+        );
+
+      // Recent downloads table
+      document.getElementById("tbl-downloads").innerHTML =
+        (d.recentDownloads.length === 0
+          ? `<tr><td colspan="4" style="color:rgba(255,255,255,0.2);text-align:center;padding:20px">No downloads yet</td></tr>`
+          : d.recentDownloads.map(r2 => {
+              const ua = (r2.user_agent || "").substring(0, 50) + ((r2.user_agent || "").length > 50 ? "…" : "");
+              const ref = r2.referrer ? new URL(r2.referrer).hostname : "direct";
+              return `<tr>
+                <td style="font-family:monospace;font-size:12px">${maskIp(r2.ip||"")}</td>
+                <td style="font-size:12px;color:rgba(255,255,255,0.5)">${ref}</td>
+                <td style="font-size:11px;color:rgba(255,255,255,0.35)">${ua}</td>
+                <td>${r2.created_at ? new Date(r2.created_at).toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}) : "—"}</td>
+              </tr>`;
+            }).join("")
+        );
+
+    } catch(e) {
+      console.error(e);
+      alert("Failed to load stats: " + e.message);
+    }
+  }
+
+  function maskIp(ip) {
+    // Show first two octets of IPv4, mask rest
+    const parts = ip.split(".");
+    if (parts.length === 4) return parts[0] + "." + parts[1] + ".xxx.xxx";
+    return ip.slice(0, 8) + "***";
+  }
+
+  // Auto-restore session
+  if (_token) loadStats();
+
+  // Auto-refresh every 60 seconds when dashboard is visible
+  setInterval(() => {
+    if (document.getElementById("dashboard").style.display !== "none") loadStats();
+  }, 60000);
+</script>
+</body>
+</html>
