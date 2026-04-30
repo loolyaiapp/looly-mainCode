@@ -1,0 +1,22 @@
+{
+  "name": "looly-backend",
+  "version": "1.0.0",
+  "description": "Looly backend — license keys, payments, verification",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "groq-sdk": "^0.9.1",
+    "nodemailer": "^8.0.7",
+    "razorpay": "^2.9.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
