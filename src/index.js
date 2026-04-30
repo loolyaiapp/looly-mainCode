@@ -6,6 +6,7 @@ const lemonsqueezyRoutes = require("./routes/lemonsqueezy");
 const licenseRoutes      = require("./routes/license");
 const askRoutes          = require("./routes/ask");
 
+const path = require("path");
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
@@ -26,6 +27,9 @@ app.use(cors({
   ],
   methods: ["GET", "POST"],
 }));
+
+// ── Landing page (static) ────────────────────────────────────
+app.use(express.static(path.join(__dirname, "../public")));
 
 // ── Routes ───────────────────────────────────────────────────
 app.use("/api/razorpay",      razorpayRoutes);
