@@ -9,10 +9,14 @@ const transporter = nodemailer.createTransport({
 });
 
 async function sendLicenseEmail({ to, key, plan, provider }) {
-  const currency  = provider === "razorpay" ? "₹" : "$";
+  const currency  = provider === "razorpay" ? "&#x20B9;" : "$";
   const dashboard = provider === "razorpay"
     ? "dashboard.razorpay.com"
     : "app.lemonsqueezy.com/my-orders";
+  const isMonthly = plan === "pro-monthly";
+  const renewalText = isMonthly
+    ? "Subscription renews automatically every month"
+    : "Subscription renews automatically every year";
 
   const html = `
 <!DOCTYPE html>
@@ -21,8 +25,7 @@ async function sendLicenseEmail({ to, key, plan, provider }) {
   <div style="max-width:480px;margin:40px auto;background:#13131f;border-radius:16px;border:1px solid rgba(255,255,255,0.07);overflow:hidden;">
 
     <div style="padding:24px;background:linear-gradient(135deg,#f97316,#ea580c);text-align:center;">
-      <div style="font-size:28px;margin-bottom:6px;">🧠</div>
-      <div style="color:white;font-size:20px;font-weight:700;letter-spacing:-0.5px;">Welcome to Looly Pro</div>
+      <div style="color:white;font-size:22px;font-weight:700;letter-spacing:-0.5px;margin-bottom:4px;">Welcome to Looly Pro</div>
       <div style="color:rgba(255,255,255,0.8);font-size:13px;margin-top:4px;">Your license key is ready</div>
     </div>
 
@@ -47,10 +50,10 @@ async function sendLicenseEmail({ to, key, plan, provider }) {
       </div>
 
       <div style="color:rgba(255,255,255,0.35);font-size:11px;line-height:1.7;">
-        • This key is tied to your email address<br/>
-        • Subscription renews automatically every month<br/>
-        • To cancel: visit ${dashboard}<br/>
-        • Need help? Reply to this email
+        &bull; This key is tied to your email address<br/>
+        &bull; ${renewalText}<br/>
+        &bull; To cancel: visit ${dashboard}<br/>
+        &bull; Need help? Reply to this email
       </div>
     </div>
 
@@ -65,7 +68,7 @@ async function sendLicenseEmail({ to, key, plan, provider }) {
   await transporter.sendMail({
     from:    process.env.EMAIL_FROM,
     to,
-    subject: "🧠 Your Looly Pro License Key",
+    subject: "Your Looly Pro License Key",
     html,
   });
 }

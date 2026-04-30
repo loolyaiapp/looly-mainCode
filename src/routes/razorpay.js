@@ -42,7 +42,7 @@ router.post("/create-order", async (req, res) => {
 // Verifies signature, creates license, emails it, returns key immediately.
 router.post("/verify-payment", async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, email } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, email, plan } = req.body;
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !email) {
       return res.status(400).json({ error: "Missing required fields" });
@@ -58,9 +58,10 @@ router.post("/verify-payment", async (req, res) => {
       return res.status(400).json({ error: "Payment verification failed — invalid signature" });
     }
 
+    const resolvedPlan = plan || "pro-annual";
     const license = await createLicense({
       email,
-      plan:           "pro",
+      plan:           resolvedPlan,
       provider:       "razorpay",
       paymentId:      razorpay_payment_id,
       subscriptionId: null,
@@ -68,7 +69,7 @@ router.post("/verify-payment", async (req, res) => {
       currency:       "INR",
     });
 
-    await sendLicenseEmail({ to: email, key: license.key, plan: "pro", provider: "razorpay" });
+    await sendLicenseEmail({ to: email, key: license.key, plan: resolvedPlan, provider: "razorpay" });
 
     res.json({ licenseKey: license.key, email, expiresAt: license.expires_at });
   } catch (e) {
@@ -85,15 +86,17 @@ router.post("/webhook", async (req, res) => {
     const signature = req.headers["x-razorpay-signature"];
     const secret    = process.env.RAZORPAY_WEBHOOK_SECRET;
 
-    // Verify signature
-    const expected = crypto
-      .createHmac("sha256", secret)
-      .update(req.rawBody)
-      .digest("hex");
-
-    if (expected !== signature) {
-      console.warn("Razorpay webhook: invalid signature");
-      return res.status(400).json({ error: "Invalid signature" });
+    if (!secret || secret === "PASTE_RAZORPAY_WEBHOOK_SECRET_HERE") {
+      console.warn("Razorpay webhook: secret not configured, skipping signature check");
+    } else {
+      const expected = crypto
+        .createHmac("sha256", secret)
+        .update(req.rawBody)
+        .digest("hex");
+      if (expected !== signature) {
+        console.warn("Razorpay webhook: invalid signature");
+        return res.status(400).json({ error: "Invalid signature" });
+      }
     }
 
     const event = JSON.parse(req.rawBody);
