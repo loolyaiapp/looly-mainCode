@@ -19,17 +19,7 @@ app.use(express.json({
 }));
 
 // ── CORS ─────────────────────────────────────────────────────
-app.use(cors({
-  origin: [
-    "http://localhost:5173",    // Vite dev
-    "http://localhost:1420",    // Tauri dev
-    "http://localhost:3000",
-    "tauri://localhost",        // Tauri production
-    "https://tauri.localhost",
-    "https://looly.app",        // future domain
-  ],
-  methods: ["GET", "POST"],
-}));
+app.use(cors({ origin: true, methods: ["GET", "POST"] }));
 
 // ── Landing page (static) ────────────────────────────────────
 app.use(express.static(path.join(__dirname, "../public")));
