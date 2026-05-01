@@ -31,14 +31,17 @@ Rules:
 - Always format code inside triple backtick blocks with the language name.
 - Be direct. No fluff. Interviewers respect confidence.`;
 
+const VISION_MODEL   = "meta-llama/llama-4-scout-17b-16e-instruct";
+const DEFAULT_MODEL  = "llama-3.3-70b-versatile";
+
 // POST /api/ask
 // Pro users call this instead of Groq directly — no API key needed on their end.
 // Streams back SSE: data: {"text":"..."}\n\n ... data: [DONE]\n\n
 router.post("/ask", async (req, res) => {
-  const { licenseKey, question, model } = req.body;
+  const { licenseKey, question, model, imageBase64 } = req.body;
 
   if (!licenseKey) return res.status(400).json({ error: "licenseKey required" });
-  if (!question?.trim()) return res.status(400).json({ error: "question required" });
+  if (!question?.trim() && !imageBase64) return res.status(400).json({ error: "question or image required" });
 
   // Validate license
   const validation = await verifyLicense(licenseKey);
@@ -50,6 +53,18 @@ router.post("/ask", async (req, res) => {
   try { keys = loadKeys(); } catch {
     return res.status(500).json({ error: "Groq API keys not configured on server" });
   }
+
+  const useModel   = imageBase64 ? VISION_MODEL : (model || DEFAULT_MODEL);
+  const questionText = question?.trim() || "Analyze this screenshot. If it contains a question or problem, provide the best answer. Be direct and interview-ready.";
+  const messages   = imageBase64
+    ? [{ role: "user", content: [
+        { type: "image_url", image_url: { url: `data:image/jpeg;base64,${imageBase64}` } },
+        { type: "text", text: questionText },
+      ]}]
+    : [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user",   content: questionText },
+      ];
 
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
@@ -63,13 +78,10 @@ router.post("/ask", async (req, res) => {
     try {
       const groq   = new Groq({ apiKey });
       const stream = await groq.chat.completions.create({
-        model:      model || "llama-3.3-70b-versatile",
+        model:      useModel,
         stream:     true,
         max_tokens: 1500,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user",   content: question.trim() },
-        ],
+        messages,
       });
 
       for await (const chunk of stream) {
