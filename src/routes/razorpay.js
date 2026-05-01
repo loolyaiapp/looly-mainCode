@@ -69,7 +69,9 @@ router.post("/verify-payment", async (req, res) => {
       currency:       "INR",
     });
 
-    await sendLicenseEmail({ to: email, key: license.key, plan: resolvedPlan, provider: "razorpay" });
+    // Fire email in background — don't block the response
+    sendLicenseEmail({ to: email, key: license.key, plan: resolvedPlan, provider: "razorpay" })
+      .catch(e => console.error("License email error:", e.message));
 
     res.json({ licenseKey: license.key, email, expiresAt: license.expires_at });
   } catch (e) {
