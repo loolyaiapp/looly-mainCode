@@ -16,4 +16,20 @@ router.post("/analytics", async (req, res) => {
   res.json({ ok: true });
 });
 
+// Deletes analytics events older than 90 days — call via cron or manually
+router.delete("/analytics/cleanup", async (req, res) => {
+  const token = req.headers["x-admin-token"];
+  if (!token || token !== process.env.ADMIN_PASSWORD) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 90);
+  const { error, count } = await supabase
+    .from("analytics_events")
+    .delete({ count: "exact" })
+    .lt("created_at", cutoff.toISOString());
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ deleted: count });
+});
+
 module.exports = router;

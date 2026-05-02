@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express      = require("express");
 const cors         = require("cors");
+const rateLimit    = require("express-rate-limit");
 const razorpayRoutes     = require("./routes/razorpay");
 const lemonsqueezyRoutes = require("./routes/lemonsqueezy");
 const licenseRoutes      = require("./routes/license");
@@ -20,7 +21,47 @@ app.use(express.json({
 }));
 
 // ── CORS ─────────────────────────────────────────────────────
-app.use(cors({ origin: true, methods: ["GET", "POST"] }));
+const ALLOWED_ORIGINS = [
+  "https://looly-maincode-production.up.railway.app",
+  "http://localhost:3000",
+  "http://localhost:1420",
+  "tauri://localhost",
+  "https://tauri.localhost",
+];
+app.use(cors({
+  origin: (origin, cb) => {
+    // Allow requests with no origin (Tauri app, curl, webhooks)
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    cb(new Error("Not allowed by CORS"));
+  },
+  methods: ["GET", "POST", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "x-admin-token"],
+}));
+
+// ── Rate limiting ─────────────────────────────────────────────
+const askLimiter = rateLimit({
+  windowMs: 60 * 1000,       // 1 minute
+  max: 30,                   // 30 requests/min per IP
+  message: { error: "Too many requests — slow down." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const licenseLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  message: { error: "Too many requests." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const authLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  message: { error: "Too many requests." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // ── Landing page (static) ────────────────────────────────────
 app.use(express.static(path.join(__dirname, "../public")));
@@ -28,11 +69,11 @@ app.use(express.static(path.join(__dirname, "../public")));
 // ── Routes ───────────────────────────────────────────────────
 app.use("/api/razorpay",      razorpayRoutes);
 app.use("/api/lemonsqueezy",  lemonsqueezyRoutes);
-app.use("/api",               licenseRoutes);
-app.use("/api",               askRoutes);
+app.use("/api",               licenseLimiter, licenseRoutes);
+app.use("/api",               askLimiter,     askRoutes);
 app.use("/api",               downloadRoutes);
 app.use("/api",               analyticsRoutes);
-app.use("/",                  authRoutes);
+app.use("/",                  authLimiter, authRoutes);
 app.use("/",                  adminRoutes);
 
 // ── 404 ──────────────────────────────────────────────────────

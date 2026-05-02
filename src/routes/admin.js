@@ -9,7 +9,7 @@ router.get("/admin", (_req, res) => {
 });
 
 router.get("/api/admin/stats", async (req, res) => {
-  const token = req.query.token || req.headers["x-admin-token"];
+  const token = req.headers["x-admin-token"];
   if (!token || token !== process.env.ADMIN_PASSWORD) {
     return res.status(401).json({ error: "Unauthorized" });
   }
@@ -34,10 +34,11 @@ router.get("/api/admin/stats", async (req, res) => {
       ]);
 
     // Plan breakdown
-    const plans = { "pro-monthly": 0, "pro-annual": 0 };
+    const plans = { "pro-monthly": 0, "pro-annual": 0, "pro-trial15": 0 };
     const dailySignups = {};
     for (const row of licensesRes.data || []) {
-      if (row.plan === "pro-monthly")                      plans["pro-monthly"]++;
+      if (row.plan === "pro-monthly")                           plans["pro-monthly"]++;
+      else if (row.plan === "pro-trial15")                      plans["pro-trial15"]++;
       else if (row.plan === "pro-annual" || row.plan === "pro") plans["pro-annual"]++;
       const day = (row.created_at || "").slice(0, 10);
       if (day) dailySignups[day] = (dailySignups[day] || 0) + 1;
@@ -58,7 +59,7 @@ router.get("/api/admin/stats", async (req, res) => {
       downloads:       downloadsRes.count || 0,
       plans,
       totalPro:        plans["pro-monthly"] + plans["pro-annual"],
-      revenueINR:      plans["pro-monthly"] * 4700 + plans["pro-annual"] * 9999,
+      revenueINR:      plans["pro-monthly"] * 4700 + plans["pro-annual"] * 9999 + plans["pro-trial15"] * 2500,
       recentLicenses:  recentLicensesRes.data  || [],
       recentDownloads: recentDownloadsRes.data || [],
       eventCounts,

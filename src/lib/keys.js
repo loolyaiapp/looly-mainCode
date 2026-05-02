@@ -24,10 +24,12 @@ async function createLicense({ email, plan, provider, paymentId, subscriptionId,
   for (let attempt = 0; attempt < 5; attempt++) {
     const key = generateKey();
 
-    // Annual = 370 days (365 + 5 grace), Monthly = 35 days (30 + 5 grace)
-    const isAnnual  = plan === "pro-annual" || plan === "pro";
+    // Annual = 370 days, Monthly = 35 days, 15-Day Trial = 15 days (all include 5 grace)
+    const days = plan === "pro-annual" || plan === "pro" ? 370
+               : plan === "pro-trial15" ? 15
+               : 35;
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + (isAnnual ? 370 : 35));
+    expiresAt.setDate(expiresAt.getDate() + days);
 
     const { data, error } = await supabase
       .from("licenses")

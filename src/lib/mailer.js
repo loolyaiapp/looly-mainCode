@@ -15,10 +15,9 @@ async function sendLicenseEmail({ to, key, plan, provider }) {
   const dashboard = provider === "razorpay"
     ? "dashboard.razorpay.com"
     : "app.lemonsqueezy.com/my-orders";
-  const isMonthly = plan === "pro-monthly";
-  const renewalText = isMonthly
-    ? "Subscription renews automatically every month"
-    : "Subscription renews automatically every year";
+  const renewalText = plan === "pro-monthly"  ? "Subscription renews automatically every month"
+                    : plan === "pro-trial15" ? "15-day access — no auto-renewal"
+                    :                          "Subscription renews automatically every year";
 
   const html = `
 <!DOCTYPE html>
@@ -67,12 +66,20 @@ async function sendLicenseEmail({ to, key, plan, provider }) {
 </body>
 </html>`;
 
-  await transporter.sendMail({
-    from:    process.env.EMAIL_FROM,
-    to,
-    subject: "Your Looly Pro License Key",
-    html,
-  });
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      await transporter.sendMail({
+        from:    process.env.EMAIL_FROM,
+        to,
+        subject: "Your Looly Pro License Key",
+        html,
+      });
+      return;
+    } catch (e) {
+      if (attempt === 3) throw e;
+      await new Promise(r => setTimeout(r, attempt * 2000));
+    }
+  }
 }
 
 module.exports = { sendLicenseEmail };

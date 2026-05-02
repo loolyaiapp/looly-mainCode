@@ -31,8 +31,9 @@ Rules:
 - Always format code inside triple backtick blocks with the language name.
 - Be direct. No fluff. Interviewers respect confidence.`;
 
-const VISION_MODEL   = "meta-llama/llama-4-scout-17b-16e-instruct";
+const VISION_MODEL   = "meta-llama/llama-4-scout-17b-16e-instruct"; // Groq multimodal
 const DEFAULT_MODEL  = "llama-3.3-70b-versatile";
+const MAX_IMAGE_BYTES = 2 * 1024 * 1024; // 2MB base64 limit
 
 // POST /api/ask
 // Pro users call this instead of Groq directly — no API key needed on their end.
@@ -42,6 +43,9 @@ router.post("/ask", async (req, res) => {
 
   if (!licenseKey) return res.status(400).json({ error: "licenseKey required" });
   if (!question?.trim() && !imageBase64) return res.status(400).json({ error: "question or image required" });
+  if (imageBase64 && imageBase64.length > MAX_IMAGE_BYTES) {
+    return res.status(413).json({ error: "Image too large — max 2MB" });
+  }
 
   // Validate license
   const validation = await verifyLicense(licenseKey);
@@ -76,7 +80,7 @@ router.post("/ask", async (req, res) => {
   for (let attempt = 0; attempt < keys.length; attempt++) {
     const apiKey = nextKey(keys);
     try {
-      const groq   = new Groq({ apiKey });
+      const groq   = new Groq({ apiKey, timeout: 30000 });
       const stream = await groq.chat.completions.create({
         model:      useModel,
         stream:     true,

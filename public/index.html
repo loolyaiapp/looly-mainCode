@@ -153,7 +153,7 @@
 
     /* Pricing */
     .save-badge { background: rgba(52,211,153,0.15); color: #34d399; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 100px; letter-spacing: 0.3px; display: inline-block; margin-left: 6px; }
-    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 48px; max-width: 1050px; margin-left: auto; margin-right: auto; }
+    .pricing-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 48px; max-width: 1300px; margin-left: auto; margin-right: auto; }
     .pricing-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: 32px; position: relative; transition: all 0.3s; display: flex; flex-direction: column; }
     .pricing-card.popular { border-color: rgba(236,72,153,0.45); background: linear-gradient(160deg, rgba(236,72,153,0.07), rgba(239,68,68,0.04)); }
     .popular-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--grad); color: white; font-size: 11px; font-weight: 700; padding: 4px 16px; border-radius: 100px; white-space: nowrap; }
@@ -245,7 +245,8 @@
     @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(110%); opacity: 0; } }
 
     /* Responsive */
-    @media (max-width: 900px) { .pricing-grid { grid-template-columns: 1fr; max-width: 420px; } }
+    @media (max-width: 1100px) { .pricing-grid { grid-template-columns: repeat(2, 1fr); max-width: 700px; } }
+    @media (max-width: 600px) { .pricing-grid { grid-template-columns: 1fr; max-width: 420px; } }
     @media (max-width: 768px) {
       nav { padding: 14px 20px; }
       .nav-links, .nav-cta { display: none; }
@@ -272,7 +273,11 @@
   <!-- Navbar -->
   <nav>
     <a href="#" class="nav-logo">
-      <img src="/looly-logo.png" alt="Looly" style="height:38px; width:auto;" />
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M12 2L14 8.5L20.5 10L14 11.5L12 18L10 11.5L3.5 10L10 8.5L12 2Z" fill="url(#lg1)"/>
+        <defs><linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ec4899"/><stop offset="100%" stop-color="#ef4444"/></linearGradient></defs>
+      </svg>
+      Looly
     </a>
     <div class="nav-links">
       <a href="#how">How it works</a>
@@ -465,8 +470,8 @@
         <!-- Free -->
         <div class="pricing-card">
           <div class="pricing-plan">Free</div>
-          <div class="pricing-price"><sup>&#x20B9;</sup><span class="price-num">0</span></div>
-          <div class="pricing-period">forever</div>
+          <div class="pricing-price" style="justify-content:center;"><sup>&#x20B9;</sup><span class="price-num">0</span></div>
+          <div class="pricing-period">2 days trial</div>
           <div class="pricing-original">&nbsp;</div>
           <div class="pricing-sub">Bring your own Groq API key &mdash; it's free from Groq</div>
           <ul class="pricing-features">
@@ -479,6 +484,25 @@
             <li class="muted-feature">Community support</li>
           </ul>
           <a href="#" onclick="requireAuthThen('download')" class="btn-plan btn-plan-secondary">Download Free &rarr;</a>
+        </div>
+
+        <!-- Pro 15-Day -->
+        <div class="pricing-card">
+          <div class="pricing-plan">Pro Trial</div>
+          <div class="pricing-price"><sup>&#x20B9;</sup><span class="price-num">2,500</span></div>
+          <div class="pricing-period">15 days access</div>
+          <div class="pricing-original">&nbsp;</div>
+          <div class="pricing-sub">Try Pro risk-free for 15 days</div>
+          <ul class="pricing-features">
+            <li>Everything in Free</li>
+            <li>No API key setup needed</li>
+            <li>Priority fastest AI models</li>
+            <li>Works on 1 device</li>
+            <li>Priority email support</li>
+            <li class="muted-feature">15-day access only</li>
+            <li class="muted-feature">No renewal</li>
+          </ul>
+          <button onclick="requireAuthThen('trial15')" class="btn-plan btn-plan-secondary">Get 15-Day Access &rarr;</button>
         </div>
 
         <!-- Pro Monthly -->
@@ -495,10 +519,9 @@
             <li>Works on 1 device</li>
             <li>Cancel anytime</li>
             <li>Priority email support</li>
-            <li>30-day money-back guarantee</li>
+
           </ul>
           <button onclick="requireAuthThen('monthly')" class="btn-plan btn-plan-outline">Get Monthly &rarr;</button>
-          <p class="guarantee-note">&#x1F512; 30-day money-back guarantee</p>
         </div>
 
         <!-- Pro Annual -->
@@ -516,10 +539,9 @@
             <li>Works on 1 device</li>
             <li>Cancel anytime</li>
             <li>Priority email support</li>
-            <li>30-day money-back guarantee</li>
+
           </ul>
           <button onclick="requireAuthThen('annual')" class="btn-plan btn-plan-primary">Get Annual &rarr;</button>
-          <p class="guarantee-note">&#x1F512; 30-day money-back guarantee</p>
         </div>
 
       </div>
@@ -555,7 +577,7 @@
         </div>
         <div class="faq-item">
           <button class="faq-q" onclick="toggleFaq(this)">What is your refund policy? <span class="faq-arrow">+</span></button>
-          <div class="faq-a">We offer a full 30-day money-back guarantee, no questions asked. Email us at loolyaiapp@gmail.com and we will refund you immediately.</div>
+          <div class="faq-a">Please contact us at loolyaiapp@gmail.com before purchasing if you have any questions. All sales are final.</div>
         </div>
       </div>
     </div>
@@ -566,7 +588,7 @@
     <div class="modal">
       <button class="modal-close" onclick="closeModals()">&#x2715;</button>
       <div class="modal-title">Get Looly Pro &#x2726;</div>
-      <div class="modal-sub" id="modal-plan-info">&#x20B9;9,999/year &nbsp;&bull;&nbsp; No API key needed &nbsp;&bull;&nbsp; 30-day money-back guarantee</div>
+      <div class="modal-sub" id="modal-plan-info">&#x20B9;9,999/year &nbsp;&bull;&nbsp; No API key needed</div>
       <input id="email-input" type="email" class="modal-input" placeholder="your@email.com" autocomplete="email" />
       <div id="email-error" class="modal-error"></div>
       <button id="checkout-btn" onclick="startCheckout()" class="btn-plan btn-plan-primary modal-btn">Continue to Payment &rarr;</button>
@@ -631,8 +653,8 @@
     </div>
     <div class="footer-col">
       <h4>Legal</h4>
-      <a href="#">Privacy Policy</a>
-      <a href="#">Terms of Service</a>
+      <a href="/privacy.html">Privacy Policy</a>
+      <a href="/terms.html">Terms of Service</a>
       <a href="#">Refund Policy</a>
     </div>
   </footer>
@@ -671,8 +693,8 @@
 
     function openGetPro(plan) {
       _billing = plan || "annual";
-      var priceText = _billing === "monthly" ? "₹4,700/month" : "₹9,999/year";
-      document.getElementById("modal-plan-info").textContent = priceText + " • No API key needed • 30-day money-back guarantee";
+      var priceText = _billing === "trial15" ? "₹2,500 for 15 days" : _billing === "monthly" ? "₹4,700/month" : "₹9,999/year";
+      document.getElementById("modal-plan-info").textContent = priceText + " • No API key needed";
       document.getElementById("email-error").textContent = "";
       document.getElementById("checkout-btn").disabled    = false;
       document.getElementById("checkout-btn").textContent = "Continue to Payment →";
@@ -699,9 +721,9 @@
       btn.textContent = "Creating order...";
       btn.disabled    = true;
 
-      var plan   = _billing === "monthly" ? "pro-monthly" : "pro-annual";
-      var amount = _billing === "monthly" ? 470000 : 999900;
-      var desc   = _billing === "monthly" ? "Pro License - 1 Month" : "Pro License - 1 Year";
+      var plan   = _billing === "trial15" ? "pro-trial15" : _billing === "monthly" ? "pro-monthly" : "pro-annual";
+      var amount = _billing === "trial15" ? 250000 : _billing === "monthly" ? 470000 : 999900;
+      var desc   = _billing === "trial15" ? "Pro License - 15 Days" : _billing === "monthly" ? "Pro License - 1 Month" : "Pro License - 1 Year";
 
       try {
         showLoading("Creating order...");
@@ -860,7 +882,7 @@
     function executePendingAction(action) {
       if (action === "download") {
         window.location.href = "/api/download";
-      } else if (action === "monthly" || action === "annual") {
+      } else if (action === "monthly" || action === "annual" || action === "trial15") {
         openGetPro(action);
       }
     }
@@ -877,7 +899,7 @@
       } else {
         container.innerHTML = user.licenses.map(function(lic) {
           var expiry = lic.expires_at ? new Date(lic.expires_at).toLocaleDateString("en-IN", { day:"numeric", month:"short", year:"numeric" }) : "Lifetime";
-          var planLabel = lic.plan === "pro-monthly" ? "Pro Monthly" : lic.plan === "pro-annual" ? "Pro Annual" : "Pro";
+          var planLabel = lic.plan === "pro-monthly" ? "Pro Monthly" : lic.plan === "pro-annual" ? "Pro Annual" : lic.plan === "pro-trial15" ? "Pro 15-Day" : "Pro";
           return '<div class="license-card">' +
             '<div class="license-card-plan"><span class="license-badge">' + planLabel + '</span><span class="license-expiry">Expires ' + expiry + '</span></div>' +
             '<div class="license-key-row"><span class="license-key-text">' + lic.key + '</span>' +

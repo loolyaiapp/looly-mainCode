@@ -123,7 +123,7 @@ router.post("/webhook", async (req, res) => {
         currency:       payment.currency,
       });
 
-      await sendLicenseEmail({ to: email, key: license.key, plan: "pro", provider: "razorpay" });
+      await sendLicenseEmail({ to: email, key: license.key, plan: payment.notes?.plan || "pro-annual", provider: "razorpay" });
       console.log(`✅ Razorpay license created: ${license.key} → ${email}`);
     }
 
