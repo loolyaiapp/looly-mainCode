@@ -43,6 +43,31 @@
     .nav-links a:hover { color: white; }
     .nav-cta { background: var(--grad); border: none; border-radius: 10px; padding: 10px 22px; color: white; font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none; transition: opacity 0.2s; }
     .nav-cta:hover { opacity: 0.85; }
+    .nav-signin { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 8px 16px; color: white; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.2s; white-space: nowrap; }
+    .nav-signin:hover { background: rgba(255,255,255,0.12); }
+    .nav-signin img { width: 16px; height: 16px; border-radius: 50%; }
+    .nav-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(236,72,153,0.5); }
+
+    /* Account modal */
+    .account-modal { display: none; position: fixed; inset: 0; z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+    .account-modal.open { display: flex; }
+    .account-modal .modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
+    .account-box { position: relative; z-index: 1; background: #0e0e1a; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 32px; width: 100%; max-width: 480px; box-shadow: 0 40px 100px rgba(0,0,0,0.6); }
+    .account-header { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+    .account-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(236,72,153,0.4); background: rgba(236,72,153,0.1); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .account-name { font-size: 16px; font-weight: 700; color: white; }
+    .account-email { font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .license-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 16px; margin-bottom: 10px; }
+    .license-card-plan { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .license-badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; padding: 3px 10px; border-radius: 100px; background: linear-gradient(135deg,#ec4899,#ef4444); color: white; }
+    .license-expiry { font-size: 11px; color: var(--muted); }
+    .license-key-row { display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px 12px; }
+    .license-key-text { font-family: monospace; font-size: 12px; color: #34d399; letter-spacing: 0.5px; flex: 1; word-break: break-all; }
+    .copy-key-btn { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.25); border-radius: 6px; color: #34d399; font-size: 11px; font-weight: 600; cursor: pointer; padding: 4px 10px; white-space: nowrap; transition: all 0.2s; }
+    .copy-key-btn:hover { background: rgba(52,211,153,0.2); }
+    .no-license-msg { text-align: center; padding: 24px 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
+    .account-logout { width: 100%; margin-top: 16px; padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: rgba(255,255,255,0.45); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .account-logout:hover { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: #f87171; }
     .hamburger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; }
     .hamburger span { display: block; width: 22px; height: 2px; background: white; border-radius: 2px; transition: all 0.3s; }
     .mobile-menu { display: none; position: fixed; top: 65px; left: 0; right: 0; z-index: 99; background: rgba(8,8,16,0.97); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 20px 24px; flex-direction: column; gap: 18px; }
@@ -260,11 +285,37 @@
       <a href="#pricing">Pricing</a>
       <a href="#faq">FAQ</a>
     </div>
-    <a href="#pricing" class="nav-cta">Get Looly &rarr;</a>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <a id="nav-signin-btn" href="/api/auth/google" class="nav-signin">
+        <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        <span id="nav-signin-label">Sign In</span>
+        <img id="nav-user-avatar" src="" alt="" style="display:none;" class="nav-avatar"/>
+      </a>
+      <a href="#pricing" class="nav-cta" id="nav-get-btn">Get Looly &rarr;</a>
+    </div>
     <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
   </nav>
+
+  <!-- Account Modal -->
+  <div class="account-modal modal-overlay" id="account-modal" onclick="if(event.target===this)closeAccountModal()">
+    <div class="account-box" onclick="event.stopPropagation()">
+      <div class="account-header">
+        <div class="account-avatar" id="modal-avatar">👤</div>
+        <div>
+          <div class="account-name" id="modal-name">My Account</div>
+          <div class="account-email" id="modal-email"></div>
+        </div>
+        <button onclick="closeAccountModal()" style="margin-left:auto;background:none;border:none;color:rgba(255,255,255,0.4);font-size:18px;cursor:pointer;padding:4px;">✕</button>
+      </div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:rgba(255,255,255,0.3);margin-bottom:12px;">Your Licenses</div>
+      <div id="modal-licenses">
+        <div class="no-license-msg">Loading…</div>
+      </div>
+      <button class="account-logout" onclick="signOut()">Sign Out</button>
+    </div>
+  </div>
 
   <!-- Mobile Menu -->
   <div class="mobile-menu" id="mobile-menu">
@@ -749,7 +800,99 @@
       document.getElementById("email-input").addEventListener("keydown", function(e) {
         if (e.key === "Enter") startCheckout();
       });
+      initAuth();
     });
+
+    // ── Google Sign-In (Supabase OAuth) ──────────────────────────
+    function initAuth() {
+      // After Google OAuth, Supabase redirects back with token in URL hash
+      var hash = window.location.hash;
+      if (hash && hash.includes("access_token=")) {
+        var params = new URLSearchParams(hash.substring(1));
+        var token  = params.get("access_token");
+        if (token) {
+          localStorage.setItem("looly_auth_token", token);
+          window.history.replaceState(null, "", window.location.pathname + window.location.search);
+          loadUser(token);
+          return;
+        }
+      }
+      var saved = localStorage.getItem("looly_auth_token");
+      if (saved) loadUser(saved);
+    }
+
+    function loadUser(token) {
+      fetch("/api/me", { headers: { "Authorization": "Bearer " + token } })
+        .then(function(r) {
+          if (!r.ok) { localStorage.removeItem("looly_auth_token"); return null; }
+          return r.json();
+        })
+        .then(function(user) {
+          if (!user) return;
+          // Update navbar
+          var label  = document.getElementById("nav-signin-label");
+          var avatar = document.getElementById("nav-user-avatar");
+          label.textContent = user.name ? user.name.split(" ")[0] : user.email.split("@")[0];
+          if (user.avatar) {
+            avatar.src = user.avatar;
+            avatar.style.display = "block";
+          }
+          // Make button open account modal instead of going to Google
+          var btn = document.getElementById("nav-signin-btn");
+          btn.href = "#";
+          btn.onclick = function(e) { e.preventDefault(); openAccountModal(user); };
+          window._loolyUser = user;
+        })
+        .catch(function() { localStorage.removeItem("looly_auth_token"); });
+    }
+
+    function openAccountModal(user) {
+      document.getElementById("modal-name").textContent  = user.name || "My Account";
+      document.getElementById("modal-email").textContent = user.email;
+      if (user.avatar) {
+        document.getElementById("modal-avatar").innerHTML = '<img src="' + user.avatar + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">';
+      }
+      var container = document.getElementById("modal-licenses");
+      if (!user.licenses || user.licenses.length === 0) {
+        container.innerHTML = '<div class="no-license-msg">No licenses found for this account.<br><a href="#pricing" onclick="closeAccountModal()" style="color:#ec4899;font-weight:600;">Get Pro →</a></div>';
+      } else {
+        container.innerHTML = user.licenses.map(function(lic) {
+          var expiry = lic.expires_at ? new Date(lic.expires_at).toLocaleDateString("en-IN", { day:"numeric", month:"short", year:"numeric" }) : "Lifetime";
+          var planLabel = lic.plan === "pro-monthly" ? "Pro Monthly" : lic.plan === "pro-annual" ? "Pro Annual" : "Pro";
+          return '<div class="license-card">' +
+            '<div class="license-card-plan"><span class="license-badge">' + planLabel + '</span><span class="license-expiry">Expires ' + expiry + '</span></div>' +
+            '<div class="license-key-row"><span class="license-key-text">' + lic.key + '</span>' +
+            '<button class="copy-key-btn" onclick="copyLicenseKey(this,\'' + lic.key + '\')">📋 Copy</button></div>' +
+            '</div>';
+        }).join("");
+      }
+      document.getElementById("account-modal").classList.add("open");
+    }
+
+    function closeAccountModal() {
+      document.getElementById("account-modal").classList.remove("open");
+    }
+
+    function copyLicenseKey(btn, key) {
+      navigator.clipboard.writeText(key).then(function() {
+        btn.textContent = "✓ Copied!";
+        setTimeout(function() { btn.textContent = "📋 Copy"; }, 2000);
+      });
+    }
+
+    function signOut() {
+      localStorage.removeItem("looly_auth_token");
+      window._loolyUser = null;
+      closeAccountModal();
+      var label  = document.getElementById("nav-signin-label");
+      var avatar = document.getElementById("nav-user-avatar");
+      label.textContent   = "Sign In";
+      avatar.style.display = "none";
+      var btn = document.getElementById("nav-signin-btn");
+      btn.href    = "/api/auth/google";
+      btn.onclick = null;
+      showToast("Signed out successfully", "success", 2500);
+    }
 
     function toggleFaq(btn) {
       var answer = btn.nextElementSibling;

@@ -8,6 +8,7 @@ const askRoutes          = require("./routes/ask");
 const downloadRoutes     = require("./routes/download");
 const analyticsRoutes    = require("./routes/analytics");
 const adminRoutes        = require("./routes/admin");
+const authRoutes         = require("./routes/auth");
 
 const path = require("path");
 const app  = express();
@@ -31,6 +32,7 @@ app.use("/api",               licenseRoutes);
 app.use("/api",               askRoutes);
 app.use("/api",               downloadRoutes);
 app.use("/api",               analyticsRoutes);
+app.use("/",                  authRoutes);
 app.use("/",                  adminRoutes);
 
 // ── 404 ──────────────────────────────────────────────────────
