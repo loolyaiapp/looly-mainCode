@@ -482,7 +482,7 @@
             <li class="muted-feature">Groq API key required</li>
             <li class="muted-feature">Community support</li>
           </ul>
-          <a href="/api/download" class="btn-plan btn-plan-secondary">Download Free &rarr;</a>
+          <a href="#" onclick="requireAuthThen('download')" class="btn-plan btn-plan-secondary">Download Free &rarr;</a>
         </div>
 
         <!-- Pro Monthly -->
@@ -501,7 +501,7 @@
             <li>Priority email support</li>
             <li>30-day money-back guarantee</li>
           </ul>
-          <button onclick="openGetPro('monthly')" class="btn-plan btn-plan-outline">Get Monthly &rarr;</button>
+          <button onclick="requireAuthThen('monthly')" class="btn-plan btn-plan-outline">Get Monthly &rarr;</button>
           <p class="guarantee-note">&#x1F512; 30-day money-back guarantee</p>
         </div>
 
@@ -522,7 +522,7 @@
             <li>Priority email support</li>
             <li>30-day money-back guarantee</li>
           </ul>
-          <button onclick="openGetPro('annual')" class="btn-plan btn-plan-primary">Get Annual &rarr;</button>
+          <button onclick="requireAuthThen('annual')" class="btn-plan btn-plan-primary">Get Annual &rarr;</button>
           <p class="guarantee-note">&#x1F512; 30-day money-back guarantee</p>
         </div>
 
@@ -805,7 +805,6 @@
 
     // ── Google Sign-In (Supabase OAuth) ──────────────────────────
     function initAuth() {
-      // After Google OAuth, Supabase redirects back with token in URL hash
       var hash = window.location.hash;
       if (hash && hash.includes("access_token=")) {
         var params = new URLSearchParams(hash.substring(1));
@@ -813,15 +812,15 @@
         if (token) {
           localStorage.setItem("looly_auth_token", token);
           window.history.replaceState(null, "", window.location.pathname + window.location.search);
-          loadUser(token);
+          loadUser(token, true); // true = check pending action after load
           return;
         }
       }
       var saved = localStorage.getItem("looly_auth_token");
-      if (saved) loadUser(saved);
+      if (saved) loadUser(saved, false);
     }
 
-    function loadUser(token) {
+    function loadUser(token, checkPending) {
       fetch("/api/me", { headers: { "Authorization": "Bearer " + token } })
         .then(function(r) {
           if (!r.ok) { localStorage.removeItem("looly_auth_token"); return null; }
@@ -829,21 +828,45 @@
         })
         .then(function(user) {
           if (!user) return;
+          window._loolyUser = user;
           // Update navbar
           var label  = document.getElementById("nav-signin-label");
           var avatar = document.getElementById("nav-user-avatar");
           label.textContent = user.name ? user.name.split(" ")[0] : user.email.split("@")[0];
-          if (user.avatar) {
-            avatar.src = user.avatar;
-            avatar.style.display = "block";
-          }
-          // Make button open account modal instead of going to Google
+          if (user.avatar) { avatar.src = user.avatar; avatar.style.display = "block"; }
           var btn = document.getElementById("nav-signin-btn");
           btn.href = "#";
           btn.onclick = function(e) { e.preventDefault(); openAccountModal(user); };
-          window._loolyUser = user;
+          // Pre-fill email in checkout modal
+          var emailInput = document.getElementById("email-input");
+          if (emailInput && user.email) emailInput.value = user.email;
+          // Execute any action the user was trying before sign-in
+          if (checkPending) {
+            var pending = localStorage.getItem("looly_pending_action");
+            if (pending) {
+              localStorage.removeItem("looly_pending_action");
+              setTimeout(function() { executePendingAction(pending); }, 300);
+            }
+          }
         })
         .catch(function() { localStorage.removeItem("looly_auth_token"); });
+    }
+
+    function requireAuthThen(action) {
+      if (window._loolyUser) {
+        executePendingAction(action);
+      } else {
+        localStorage.setItem("looly_pending_action", action);
+        window.location.href = "/api/auth/google";
+      }
+    }
+
+    function executePendingAction(action) {
+      if (action === "download") {
+        window.location.href = "/api/download";
+      } else if (action === "monthly" || action === "annual") {
+        openGetPro(action);
+      }
     }
 
     function openAccountModal(user) {
