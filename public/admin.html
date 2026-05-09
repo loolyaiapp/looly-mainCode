@@ -168,7 +168,7 @@
 
   async function loadStats() {
     try {
-      const r = await fetch(`${BACKEND}/api/admin/stats?token=${encodeURIComponent(_token)}`);
+      const r = await fetch(`${BACKEND}/api/admin/stats`, { headers: { "x-admin-token": _token } });
       if (r.status === 401) {
         document.getElementById("login-err").style.display = "block";
         return;
